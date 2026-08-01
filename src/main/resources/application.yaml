@@ -14,3 +14,7 @@ app:
 
   user-service:
     base-url: ${USER_SERVICE_URL:http://localhost:8080}
+
+  http:
+    connect-timeout: ${HTTP_CONNECT_TIMEOUT:3s}
+    read-timeout: ${HTTP_READ_TIMEOUT:10s}

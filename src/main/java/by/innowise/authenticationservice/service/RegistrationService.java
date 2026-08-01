@@ -8,19 +8,16 @@ import by.innowise.authenticationservice.dto.response.RegistrationResponseDto;
 import by.innowise.authenticationservice.dto.userservice.UserServiceCreateRequestDto;
 import by.innowise.authenticationservice.dto.userservice.UserServiceUserResponseDto;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RegistrationService {
-
-    private static final Logger log =
-            LoggerFactory.getLogger(RegistrationService.class);
 
     private final UserServiceClient userServiceClient;
     private final KeycloakAdminClient keycloakAdminClient;

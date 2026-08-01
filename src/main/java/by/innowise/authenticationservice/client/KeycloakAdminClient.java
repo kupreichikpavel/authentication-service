@@ -7,8 +7,7 @@ import by.innowise.authenticationservice.dto.keycloak.KeycloakUserCreateRequest;
 import by.innowise.authenticationservice.exception.IdentityProviderException;
 import by.innowise.authenticationservice.exception.UserAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -19,12 +18,10 @@ import org.springframework.web.client.RestClientResponseException;
 import java.net.URI;
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class KeycloakAdminClient {
-
-    private static final Logger log =
-            LoggerFactory.getLogger(KeycloakAdminClient.class);
 
     private static final String DEFAULT_ROLE = "USER";
 
