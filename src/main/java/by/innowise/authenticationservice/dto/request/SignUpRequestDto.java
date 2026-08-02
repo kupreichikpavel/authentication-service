@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
-public record RegistrationRequestDto(
+public record SignUpRequestDto(
 
         @NotBlank(message = "Login must not be blank")
         @Size(

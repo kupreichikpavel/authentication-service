@@ -3,7 +3,7 @@ package by.innowise.authenticationservice.service;
 import by.innowise.authenticationservice.client.KeycloakAdminClient;
 import by.innowise.authenticationservice.client.UserServiceClient;
 import by.innowise.authenticationservice.dto.keycloak.KeycloakUserCreateRequest;
-import by.innowise.authenticationservice.dto.request.RegistrationRequestDto;
+import by.innowise.authenticationservice.dto.request.SignUpRequestDto;
 import by.innowise.authenticationservice.dto.response.RegistrationResponseDto;
 import by.innowise.authenticationservice.dto.userservice.UserServiceCreateRequestDto;
 import by.innowise.authenticationservice.dto.userservice.UserServiceUserResponseDto;
@@ -43,7 +43,7 @@ class RegistrationServiceTest {
 
     @Test
     void registerShouldReturnCreatedUser() {
-        RegistrationRequestDto request = request();
+        SignUpRequestDto request = request();
 
         when(userServiceClient.createUser(
                 any(UserServiceCreateRequestDto.class)
@@ -68,7 +68,7 @@ class RegistrationServiceTest {
 
     @Test
     void registerShouldDeleteProfileWhenKeycloakFails() {
-        RegistrationRequestDto request = request();
+        SignUpRequestDto request = request();
 
         when(userServiceClient.createUser(
                 any(UserServiceCreateRequestDto.class)
@@ -100,7 +100,7 @@ class RegistrationServiceTest {
 
     @Test
     void registerShouldNotCallKeycloakWhenProfileCreationFails() {
-        RegistrationRequestDto request = request();
+        SignUpRequestDto request = request();
 
         when(userServiceClient.createUser(
                 any(UserServiceCreateRequestDto.class)
@@ -119,8 +119,8 @@ class RegistrationServiceTest {
                 .deleteUser(USER_ID);
     }
 
-    private RegistrationRequestDto request() {
-        return new RegistrationRequestDto(
+    private SignUpRequestDto request() {
+        return new SignUpRequestDto(
                 "registration-test",
                 "TestPassword123!",
                 "Pavel",

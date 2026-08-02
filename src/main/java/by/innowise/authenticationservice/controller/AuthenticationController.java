@@ -2,7 +2,7 @@ package by.innowise.authenticationservice.controller;
 
 import by.innowise.authenticationservice.dto.request.LoginRequestDto;
 import by.innowise.authenticationservice.dto.request.RefreshTokenRequestDto;
-import by.innowise.authenticationservice.dto.request.RegistrationRequestDto;
+import by.innowise.authenticationservice.dto.request.SignUpRequestDto;
 import by.innowise.authenticationservice.dto.request.TokenValidationRequestDto;
 import by.innowise.authenticationservice.dto.response.RegistrationResponseDto;
 import by.innowise.authenticationservice.dto.response.TokenResponseDto;
@@ -26,9 +26,9 @@ public class AuthenticationController {
     private final TokenService tokenService;
     private final RegistrationService registrationService;
 
-    @PostMapping("/register")
-    public ResponseEntity<RegistrationResponseDto> register(
-            @Valid @RequestBody RegistrationRequestDto request
+    @PostMapping("/sign-up")
+    public ResponseEntity<RegistrationResponseDto> signUp(
+            @Valid @RequestBody SignUpRequestDto request
     ) {
         RegistrationResponseDto response =
                 registrationService.register(request);

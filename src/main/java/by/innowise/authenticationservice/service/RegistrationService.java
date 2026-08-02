@@ -3,7 +3,7 @@ package by.innowise.authenticationservice.service;
 import by.innowise.authenticationservice.client.KeycloakAdminClient;
 import by.innowise.authenticationservice.client.UserServiceClient;
 import by.innowise.authenticationservice.dto.keycloak.KeycloakUserCreateRequest;
-import by.innowise.authenticationservice.dto.request.RegistrationRequestDto;
+import by.innowise.authenticationservice.dto.request.SignUpRequestDto;
 import by.innowise.authenticationservice.dto.response.RegistrationResponseDto;
 import by.innowise.authenticationservice.dto.userservice.UserServiceCreateRequestDto;
 import by.innowise.authenticationservice.dto.userservice.UserServiceUserResponseDto;
@@ -23,7 +23,7 @@ public class RegistrationService {
     private final KeycloakAdminClient keycloakAdminClient;
 
     public RegistrationResponseDto register(
-            RegistrationRequestDto request
+            SignUpRequestDto request
     ) {
         UserServiceCreateRequestDto userServiceRequest =
                 new UserServiceCreateRequestDto(
