@@ -30,103 +30,103 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class RegistrationServiceTest {
 
-    private static final Long USER_ID = 42L;
+  private static final Long USER_ID = 42L;
 
-    @Mock
-    private UserServiceClient userServiceClient;
+  @Mock
+  private UserServiceClient userServiceClient;
 
-    @Mock
-    private KeycloakAdminClient keycloakAdminClient;
+  @Mock
+  private KeycloakAdminClient keycloakAdminClient;
 
-    @InjectMocks
-    private RegistrationService registrationService;
+  @InjectMocks
+  private RegistrationService registrationService;
 
-    @Test
-    void registerShouldReturnCreatedUser() {
-        SignUpRequestDto request = request();
+  @Test
+  void registerShouldReturnCreatedUser() {
+    SignUpRequestDto request = request();
 
-        when(userServiceClient.createUser(
-                any(UserServiceCreateRequestDto.class)
-        )).thenReturn(
-                new UserServiceUserResponseDto(USER_ID)
+    when(userServiceClient.createUser(
+        any(UserServiceCreateRequestDto.class)
+    )).thenReturn(
+        new UserServiceUserResponseDto(USER_ID)
+    );
+
+    when(keycloakAdminClient.createUser(
+        any(KeycloakUserCreateRequest.class),
+        eq(request.password())
+    )).thenReturn("keycloak-user-id");
+
+    RegistrationResponseDto response =
+        registrationService.register(request);
+
+    assertEquals(USER_ID, response.userId());
+    assertEquals(request.login(), response.login());
+
+    verify(userServiceClient, never())
+        .deleteUser(USER_ID);
+  }
+
+  @Test
+  void registerShouldDeleteProfileWhenKeycloakFails() {
+    SignUpRequestDto request = request();
+
+    when(userServiceClient.createUser(
+        any(UserServiceCreateRequestDto.class)
+    )).thenReturn(
+        new UserServiceUserResponseDto(USER_ID)
+    );
+
+    IdentityProviderException expectedException =
+        new IdentityProviderException(
+            "Keycloak error"
         );
 
-        when(keycloakAdminClient.createUser(
-                any(KeycloakUserCreateRequest.class),
-                eq(request.password())
-        )).thenReturn("keycloak-user-id");
+    when(keycloakAdminClient.createUser(
+        any(KeycloakUserCreateRequest.class),
+        eq(request.password())
+    )).thenThrow(expectedException);
 
-        RegistrationResponseDto response =
-                registrationService.register(request);
-
-        assertEquals(USER_ID, response.userId());
-        assertEquals(request.login(), response.login());
-
-        verify(userServiceClient, never())
-                .deleteUser(USER_ID);
-    }
-
-    @Test
-    void registerShouldDeleteProfileWhenKeycloakFails() {
-        SignUpRequestDto request = request();
-
-        when(userServiceClient.createUser(
-                any(UserServiceCreateRequestDto.class)
-        )).thenReturn(
-                new UserServiceUserResponseDto(USER_ID)
-        );
-
-        IdentityProviderException expectedException =
-                new IdentityProviderException(
-                        "Keycloak error"
-                );
-
-        when(keycloakAdminClient.createUser(
-                any(KeycloakUserCreateRequest.class),
-                eq(request.password())
-        )).thenThrow(expectedException);
-
-        IdentityProviderException actualException =
-                assertThrows(
-                        IdentityProviderException.class,
-                        () -> registrationService.register(request)
-                );
-
-        assertSame(expectedException, actualException);
-
-        verify(userServiceClient)
-                .deleteUser(USER_ID);
-    }
-
-    @Test
-    void registerShouldNotCallKeycloakWhenProfileCreationFails() {
-        SignUpRequestDto request = request();
-
-        when(userServiceClient.createUser(
-                any(UserServiceCreateRequestDto.class)
-        )).thenThrow(
-                new UserAlreadyExistsException()
-        );
-
+    IdentityProviderException actualException =
         assertThrows(
-                UserAlreadyExistsException.class,
-                () -> registrationService.register(request)
+            IdentityProviderException.class,
+            () -> registrationService.register(request)
         );
 
-        verifyNoInteractions(keycloakAdminClient);
+    assertSame(expectedException, actualException);
 
-        verify(userServiceClient, never())
-                .deleteUser(USER_ID);
-    }
+    verify(userServiceClient)
+        .deleteUser(USER_ID);
+  }
 
-    private SignUpRequestDto request() {
-        return new SignUpRequestDto(
-                "registration-test",
-                "TestPassword123!",
-                "Pavel",
-                "Kupreichik",
-                LocalDate.of(2005, 1, 1),
-                "registration.test@example.com"
-        );
-    }
+  @Test
+  void registerShouldNotCallKeycloakWhenProfileCreationFails() {
+    SignUpRequestDto request = request();
+
+    when(userServiceClient.createUser(
+        any(UserServiceCreateRequestDto.class)
+    )).thenThrow(
+        new UserAlreadyExistsException()
+    );
+
+    assertThrows(
+        UserAlreadyExistsException.class,
+        () -> registrationService.register(request)
+    );
+
+    verifyNoInteractions(keycloakAdminClient);
+
+    verify(userServiceClient, never())
+        .deleteUser(USER_ID);
+  }
+
+  private SignUpRequestDto request() {
+    return new SignUpRequestDto(
+        "registration-test",
+        "TestPassword123!",
+        "Pavel",
+        "Kupreichik",
+        LocalDate.of(2005, 1, 1),
+        "registration.test@example.com"
+    );
+  }
 }

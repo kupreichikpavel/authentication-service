@@ -12,37 +12,16 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http
-    ) throws Exception {
-        return http
-                .csrf(AbstractHttpConfigurer::disable)
-                .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .logout(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
-                        )
-                )
-                .authorizeHttpRequests(authorize -> authorize
-                        .dispatcherTypeMatchers(
-                                DispatcherType.ERROR,
-                                DispatcherType.FORWARD
-                        )
-                        .permitAll()
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/v1/auth/sign-up",
-                                "/api/v1/auth/token",
-                                "/api/v1/auth/refresh",
-                                "/api/v1/auth/validate"
-                        )
-                        .permitAll()
-                        .anyRequest()
-                        .denyAll()
-                )
-                .build();
-    }
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    return http.csrf(AbstractHttpConfigurer::disable).formLogin(AbstractHttpConfigurer::disable)
+        .httpBasic(AbstractHttpConfigurer::disable).logout(AbstractHttpConfigurer::disable)
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(authorize -> authorize.dispatcherTypeMatchers(DispatcherType.ERROR,
+                DispatcherType.FORWARD).permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/v1/auth/sign-up", "/api/v1/auth/token",
+                "/api/v1/auth/refresh", "/api/v1/auth/validate").permitAll().anyRequest().denyAll())
+        .build();
+  }
 }

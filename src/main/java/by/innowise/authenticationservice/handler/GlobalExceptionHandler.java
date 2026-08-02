@@ -20,124 +20,124 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(InvalidAuthenticationDataException.class)
-    public ResponseEntity<ProblemDetail> handleInvalidAuthenticationData(
-            InvalidAuthenticationDataException exception
-    ) {
-        return createResponse(
-                HttpStatus.UNAUTHORIZED,
-                "Authentication failed",
-                exception.getMessage()
-        );
-    }
+  @ExceptionHandler(InvalidAuthenticationDataException.class)
+  public ResponseEntity<ProblemDetail> handleInvalidAuthenticationData(
+      InvalidAuthenticationDataException exception
+  ) {
+    return createResponse(
+        HttpStatus.UNAUTHORIZED,
+        "Authentication failed",
+        exception.getMessage()
+    );
+  }
 
-    @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<ProblemDetail> handleUserAlreadyExists(
-            UserAlreadyExistsException exception
-    ) {
-        return createResponse(
-                HttpStatus.CONFLICT,
-                "Registration conflict",
-                exception.getMessage()
-        );
-    }
+  @ExceptionHandler(UserAlreadyExistsException.class)
+  public ResponseEntity<ProblemDetail> handleUserAlreadyExists(
+      UserAlreadyExistsException exception
+  ) {
+    return createResponse(
+        HttpStatus.CONFLICT,
+        "Registration conflict",
+        exception.getMessage()
+    );
+  }
 
-    @ExceptionHandler(InvalidUserProfileException.class)
-    public ResponseEntity<ProblemDetail> handleInvalidUserProfile(
-            InvalidUserProfileException exception
-    ) {
-        return createResponse(
-                HttpStatus.BAD_REQUEST,
-                "Invalid user profile",
-                exception.getMessage()
-        );
-    }
+  @ExceptionHandler(InvalidUserProfileException.class)
+  public ResponseEntity<ProblemDetail> handleInvalidUserProfile(
+      InvalidUserProfileException exception
+  ) {
+    return createResponse(
+        HttpStatus.BAD_REQUEST,
+        "Invalid user profile",
+        exception.getMessage()
+    );
+  }
 
-    @ExceptionHandler(IdentityProviderException.class)
-    public ResponseEntity<ProblemDetail> handleIdentityProviderException(
-            IdentityProviderException exception
-    ) {
-        log.error(
-                "Identity provider communication failed",
-                exception
-        );
+  @ExceptionHandler(IdentityProviderException.class)
+  public ResponseEntity<ProblemDetail> handleIdentityProviderException(
+      IdentityProviderException exception
+  ) {
+    log.error(
+        "Identity provider communication failed",
+        exception
+    );
 
-        return createResponse(
-                HttpStatus.BAD_GATEWAY,
-                "Keycloak communication error",
-                "Identity provider is unavailable"
-        );
-    }
+    return createResponse(
+        HttpStatus.BAD_GATEWAY,
+        "Keycloak communication error",
+        "Identity provider is unavailable"
+    );
+  }
 
-    @ExceptionHandler(UserServiceCommunicationException.class)
-    public ResponseEntity<ProblemDetail> handleUserServiceCommunication(
-            UserServiceCommunicationException exception
-    ) {
-        log.error(
-                "User Service communication failed",
-                exception
-        );
+  @ExceptionHandler(UserServiceCommunicationException.class)
+  public ResponseEntity<ProblemDetail> handleUserServiceCommunication(
+      UserServiceCommunicationException exception
+  ) {
+    log.error(
+        "User Service communication failed",
+        exception
+    );
 
-        return createResponse(
-                HttpStatus.BAD_GATEWAY,
-                "User Service communication error",
-                "User Service is unavailable"
-        );
-    }
+    return createResponse(
+        HttpStatus.BAD_GATEWAY,
+        "User Service communication error",
+        "User Service is unavailable"
+    );
+  }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ProblemDetail> handleValidationException(
-            MethodArgumentNotValidException exception
-    ) {
-        Map<String, String> errors = new LinkedHashMap<>();
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ProblemDetail> handleValidationException(
+      MethodArgumentNotValidException exception
+  ) {
+    Map<String, String> errors = new LinkedHashMap<>();
 
-        exception.getBindingResult()
-                .getFieldErrors()
-                .forEach(error -> errors.putIfAbsent(
-                        error.getField(),
-                        error.getDefaultMessage()
-                ));
+    exception.getBindingResult()
+        .getFieldErrors()
+        .forEach(error -> errors.putIfAbsent(
+            error.getField(),
+            error.getDefaultMessage()
+        ));
 
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-                HttpStatus.BAD_REQUEST,
-                "Request validation failed"
-        );
+    ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+        HttpStatus.BAD_REQUEST,
+        "Request validation failed"
+    );
 
-        problem.setTitle("Invalid request");
-        problem.setProperty("errors", errors);
+    problem.setTitle("Invalid request");
+    problem.setProperty("errors", errors);
 
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(problem);
-    }
+    return ResponseEntity
+        .status(HttpStatus.BAD_REQUEST)
+        .body(problem);
+  }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ProblemDetail> handleUnexpectedException(
-            Exception exception
-    ) {
-        log.error("Unexpected application error", exception);
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ProblemDetail> handleUnexpectedException(
+      Exception exception
+  ) {
+    log.error("Unexpected application error", exception);
 
-        return createResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "Internal server error",
-                "An unexpected error occurred"
-        );
-    }
+    return createResponse(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        "Internal server error",
+        "An unexpected error occurred"
+    );
+  }
 
-    private ResponseEntity<ProblemDetail> createResponse(
-            HttpStatus status,
-            String title,
-            String detail
-    ) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-                status,
-                detail
-        );
+  private ResponseEntity<ProblemDetail> createResponse(
+      HttpStatus status,
+      String title,
+      String detail
+  ) {
+    ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+        status,
+        detail
+    );
 
-        problem.setTitle(title);
+    problem.setTitle(title);
 
-        return ResponseEntity
-                .status(status)
-                .body(problem);
-    }
+    return ResponseEntity
+        .status(status)
+        .body(problem);
+  }
 }

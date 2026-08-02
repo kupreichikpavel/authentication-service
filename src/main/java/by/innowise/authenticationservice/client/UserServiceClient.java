@@ -17,93 +17,93 @@ import org.springframework.web.client.RestClientResponseException;
 @RequiredArgsConstructor
 public class UserServiceClient {
 
-    private final RestClient restClient;
-    private final UserServiceProperties properties;
-    private final KeycloakTokenClient keycloakTokenClient;
+  private final RestClient restClient;
+  private final UserServiceProperties properties;
+  private final KeycloakTokenClient keycloakTokenClient;
 
-    public UserServiceUserResponseDto createUser(
-            UserServiceCreateRequestDto request
-    ) {
-        try {
-            String serviceToken =
-                    keycloakTokenClient.createServiceAccessToken();
+  public UserServiceUserResponseDto createUser(
+      UserServiceCreateRequestDto request
+  ) {
+    try {
+      String serviceToken =
+          keycloakTokenClient.createServiceAccessToken();
 
-            UserServiceUserResponseDto response = restClient
-                    .post()
-                    .uri(properties.usersUrl())
-                    .headers(headers ->
-                            headers.setBearerAuth(serviceToken)
-                    )
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(request)
-                    .retrieve()
-                    .body(UserServiceUserResponseDto.class);
+      UserServiceUserResponseDto response = restClient
+          .post()
+          .uri(properties.usersUrl())
+          .headers(headers ->
+              headers.setBearerAuth(serviceToken)
+          )
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(request)
+          .retrieve()
+          .body(UserServiceUserResponseDto.class);
 
-            validateUserResponse(response);
+      validateUserResponse(response);
 
-            return response;
-        } catch (RestClientResponseException exception) {
-            int status = exception.getStatusCode().value();
+      return response;
+    } catch (RestClientResponseException exception) {
+      int status = exception.getStatusCode().value();
 
-            if (status == 409) {
-                throw new UserAlreadyExistsException(
-                        "User with this email already exists"
-                );
-            }
+      if (status == 409) {
+        throw new UserAlreadyExistsException(
+            "User with this email already exists"
+        );
+      }
 
-            if (status == 400) {
-                throw new InvalidUserProfileException();
-            }
+      if (status == 400) {
+        throw new InvalidUserProfileException();
+      }
 
-            throw new UserServiceCommunicationException(
-                    "User Service failed to create a user",
-                    exception
-            );
-        } catch (RestClientException exception) {
-            throw new UserServiceCommunicationException(
-                    "User Service is unavailable",
-                    exception
-            );
-        }
+      throw new UserServiceCommunicationException(
+          "User Service failed to create a user",
+          exception
+      );
+    } catch (RestClientException exception) {
+      throw new UserServiceCommunicationException(
+          "User Service is unavailable",
+          exception
+      );
     }
+  }
 
-    public void deleteUser(Long userId) {
-        try {
-            String serviceToken =
-                    keycloakTokenClient.createServiceAccessToken();
+  public void deleteUser(Long userId) {
+    try {
+      String serviceToken =
+          keycloakTokenClient.createServiceAccessToken();
 
-            restClient
-                    .delete()
-                    .uri(properties.userUrl(userId))
-                    .headers(headers ->
-                            headers.setBearerAuth(serviceToken)
-                    )
-                    .retrieve()
-                    .toBodilessEntity();
-        } catch (RestClientResponseException exception) {
-            if (exception.getStatusCode().value() == 404) {
-                return;
-            }
+      restClient
+          .delete()
+          .uri(properties.userUrl(userId))
+          .headers(headers ->
+              headers.setBearerAuth(serviceToken)
+          )
+          .retrieve()
+          .toBodilessEntity();
+    } catch (RestClientResponseException exception) {
+      if (exception.getStatusCode().value() == 404) {
+        return;
+      }
 
-            throw new UserServiceCommunicationException(
-                    "User Service failed to delete a user",
-                    exception
-            );
-        } catch (RestClientException exception) {
-            throw new UserServiceCommunicationException(
-                    "User Service is unavailable",
-                    exception
-            );
-        }
+      throw new UserServiceCommunicationException(
+          "User Service failed to delete a user",
+          exception
+      );
+    } catch (RestClientException exception) {
+      throw new UserServiceCommunicationException(
+          "User Service is unavailable",
+          exception
+      );
     }
+  }
 
-    private void validateUserResponse(
-            UserServiceUserResponseDto response
-    ) {
-        if (response == null || response.id() == null) {
-            throw new UserServiceCommunicationException(
-                    "User Service returned an invalid response"
-            );
-        }
+  private void validateUserResponse(
+      UserServiceUserResponseDto response
+  ) {
+    if (response == null || response.id() == null) {
+      throw new UserServiceCommunicationException(
+          "User Service returned an invalid response"
+      );
     }
+  }
 }

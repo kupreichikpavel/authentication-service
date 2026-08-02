@@ -6,19 +6,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record KeycloakTokenResponse(
 
-        @JsonProperty("access_token")
-        String accessToken,
+    @JsonProperty("access_token")
+    String accessToken,
 
-        @JsonProperty("refresh_token")
-        String refreshToken,
+    @JsonProperty("refresh_token")
+    String refreshToken,
 
-        @JsonProperty("expires_in")
-        long expiresIn,
+    @JsonProperty("expires_in")
+    long expiresIn,
 
-        @JsonProperty("refresh_expires_in")
-        long refreshExpiresIn,
+    @JsonProperty("refresh_expires_in")
+    long refreshExpiresIn,
 
-        @JsonProperty("token_type")
-        String tokenType
+    @JsonProperty("token_type")
+    String tokenType
 ) {
+
 }

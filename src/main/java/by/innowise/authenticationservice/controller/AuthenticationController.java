@@ -23,48 +23,48 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthenticationController {
 
-    private final TokenService tokenService;
-    private final RegistrationService registrationService;
+  private final TokenService tokenService;
+  private final RegistrationService registrationService;
 
-    @PostMapping("/sign-up")
-    public ResponseEntity<RegistrationResponseDto> signUp(
-            @Valid @RequestBody SignUpRequestDto request
-    ) {
-        RegistrationResponseDto response =
-                registrationService.register(request);
+  @PostMapping("/sign-up")
+  public ResponseEntity<RegistrationResponseDto> signUp(
+      @Valid @RequestBody SignUpRequestDto request
+  ) {
+    RegistrationResponseDto response =
+        registrationService.register(request);
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
-    }
+    return ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(response);
+  }
 
-    @PostMapping("/token")
-    public ResponseEntity<TokenResponseDto> createToken(
-            @Valid @RequestBody LoginRequestDto request
-    ) {
-        TokenResponseDto response =
-                tokenService.createToken(request);
+  @PostMapping("/token")
+  public ResponseEntity<TokenResponseDto> createToken(
+      @Valid @RequestBody LoginRequestDto request
+  ) {
+    TokenResponseDto response =
+        tokenService.createToken(request);
 
-        return ResponseEntity.ok(response);
-    }
+    return ResponseEntity.ok(response);
+  }
 
-    @PostMapping("/refresh")
-    public ResponseEntity<TokenResponseDto> refreshToken(
-            @Valid @RequestBody RefreshTokenRequestDto request
-    ) {
-        TokenResponseDto response =
-                tokenService.refreshToken(request);
+  @PostMapping("/refresh")
+  public ResponseEntity<TokenResponseDto> refreshToken(
+      @Valid @RequestBody RefreshTokenRequestDto request
+  ) {
+    TokenResponseDto response =
+        tokenService.refreshToken(request);
 
-        return ResponseEntity.ok(response);
-    }
+    return ResponseEntity.ok(response);
+  }
 
-    @PostMapping("/validate")
-    public ResponseEntity<TokenValidationResponseDto> validateToken(
-            @Valid @RequestBody TokenValidationRequestDto request
-    ) {
-        TokenValidationResponseDto response =
-                tokenService.validateToken(request);
+  @PostMapping("/validate")
+  public ResponseEntity<TokenValidationResponseDto> validateToken(
+      @Valid @RequestBody TokenValidationRequestDto request
+  ) {
+    TokenValidationResponseDto response =
+        tokenService.validateToken(request);
 
-        return ResponseEntity.ok(response);
-    }
+    return ResponseEntity.ok(response);
+  }
 }

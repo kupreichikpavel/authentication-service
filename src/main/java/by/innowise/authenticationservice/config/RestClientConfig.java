@@ -11,21 +11,21 @@ import java.time.Duration;
 @Configuration
 public class RestClientConfig {
 
-    @Bean
-    public RestClient restClient(
-            @Value("${app.http.connect-timeout:3s}")
-            Duration connectTimeout,
-            @Value("${app.http.read-timeout:10s}")
-            Duration readTimeout
-    ) {
-        SimpleClientHttpRequestFactory requestFactory =
-                new SimpleClientHttpRequestFactory();
+  @Bean
+  public RestClient restClient(
+      @Value("${app.http.connect-timeout:3s}")
+      Duration connectTimeout,
+      @Value("${app.http.read-timeout:10s}")
+      Duration readTimeout
+  ) {
+    SimpleClientHttpRequestFactory requestFactory =
+        new SimpleClientHttpRequestFactory();
 
-        requestFactory.setConnectTimeout(connectTimeout);
-        requestFactory.setReadTimeout(readTimeout);
+    requestFactory.setConnectTimeout(connectTimeout);
+    requestFactory.setReadTimeout(readTimeout);
 
-        return RestClient.builder()
-                .requestFactory(requestFactory)
-                .build();
-    }
+    return RestClient.builder()
+        .requestFactory(requestFactory)
+        .build();
+  }
 }

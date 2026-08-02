@@ -19,71 +19,71 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class RegistrationService {
 
-    private final UserServiceClient userServiceClient;
-    private final KeycloakAdminClient keycloakAdminClient;
+  private final UserServiceClient userServiceClient;
+  private final KeycloakAdminClient keycloakAdminClient;
 
-    public RegistrationResponseDto register(
-            SignUpRequestDto request
-    ) {
-        UserServiceCreateRequestDto userServiceRequest =
-                new UserServiceCreateRequestDto(
-                        request.name(),
-                        request.surname(),
-                        request.birthDate(),
-                        request.email()
-                );
+  public RegistrationResponseDto register(
+      SignUpRequestDto request
+  ) {
+    UserServiceCreateRequestDto userServiceRequest =
+        new UserServiceCreateRequestDto(
+            request.name(),
+            request.surname(),
+            request.birthDate(),
+            request.email()
+        );
 
-        UserServiceUserResponseDto createdUser =
-                userServiceClient.createUser(userServiceRequest);
+    UserServiceUserResponseDto createdUser =
+        userServiceClient.createUser(userServiceRequest);
 
-        Long userId = createdUser.id();
+    Long userId = createdUser.id();
 
-        try {
-            KeycloakUserCreateRequest keycloakRequest =
-                    new KeycloakUserCreateRequest(
-                            request.login(),
-                            request.email(),
-                            request.name(),
-                            request.surname(),
-                            true,
-                            Map.of(
-                                    "userId",
-                                    List.of(userId.toString())
-                            )
-                    );
+    try {
+      KeycloakUserCreateRequest keycloakRequest =
+          new KeycloakUserCreateRequest(
+              request.login(),
+              request.email(),
+              request.name(),
+              request.surname(),
+              true,
+              Map.of(
+                  "userId",
+                  List.of(userId.toString())
+              )
+          );
 
-            keycloakAdminClient.createUser(
-                    keycloakRequest,
-                    request.password()
-            );
+      keycloakAdminClient.createUser(
+          keycloakRequest,
+          request.password()
+      );
 
-            return new RegistrationResponseDto(
-                    userId,
-                    request.login()
-            );
-        } catch (RuntimeException exception) {
-            compensateUserProfile(userId, exception);
-            throw exception;
-        }
+      return new RegistrationResponseDto(
+          userId,
+          request.login()
+      );
+    } catch (RuntimeException exception) {
+      compensateUserProfile(userId, exception);
+      throw exception;
     }
+  }
 
-    private void compensateUserProfile(
-            Long userId,
-            RuntimeException originalException
-    ) {
-        try {
-            userServiceClient.deleteUser(userId);
-        } catch (RuntimeException compensationException) {
-            originalException.addSuppressed(
-                    compensationException
-            );
+  private void compensateUserProfile(
+      Long userId,
+      RuntimeException originalException
+  ) {
+    try {
+      userServiceClient.deleteUser(userId);
+    } catch (RuntimeException compensationException) {
+      originalException.addSuppressed(
+          compensationException
+      );
 
-            log.error(
-                    "Failed to compensate User Service profile creation. "
-                            + "User id: {}",
-                    userId,
-                    compensationException
-            );
-        }
+      log.error(
+          "Failed to compensate User Service profile creation. "
+              + "User id: {}",
+          userId,
+          compensationException
+      );
     }
+  }
 }

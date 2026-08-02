@@ -8,28 +8,28 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = "app.user-service")
 public record UserServiceProperties(
 
-        @NotBlank
-        String baseUrl
+    @NotBlank
+    String baseUrl
 
 ) {
 
-    public String usersUrl() {
-        return normalizedBaseUrl() + "/api/v1/users";
+  public String usersUrl() {
+    return normalizedBaseUrl() + "/api/v1/users";
+  }
+
+  public String userUrl(Long userId) {
+    return usersUrl() + "/" + userId;
+  }
+
+  private String normalizedBaseUrl() {
+    if (baseUrl.endsWith("/")) {
+      return baseUrl.substring(
+          0,
+          baseUrl.length() - 1
+      );
     }
 
-    public String userUrl(Long userId) {
-        return usersUrl() + "/" + userId;
-    }
-
-    private String normalizedBaseUrl() {
-        if (baseUrl.endsWith("/")) {
-            return baseUrl.substring(
-                    0,
-                    baseUrl.length() - 1
-            );
-        }
-
-        return baseUrl;
-    }
+    return baseUrl;
+  }
 
 }

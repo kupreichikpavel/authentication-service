@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record KeycloakRoleResponse(
-        String id,
-        String name
+    String id,
+    String name
 ) {
+
 }
