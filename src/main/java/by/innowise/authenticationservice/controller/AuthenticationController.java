@@ -38,8 +38,8 @@ public class AuthenticationController {
         .body(response);
   }
 
-  @PostMapping("/token")
-  public ResponseEntity<TokenResponseDto> createToken(
+  @PostMapping("/sign-in")
+  public ResponseEntity<TokenResponseDto> signIn(
       @Valid @RequestBody LoginRequestDto request
   ) {
     TokenResponseDto response =

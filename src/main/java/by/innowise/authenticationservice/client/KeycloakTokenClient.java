@@ -8,11 +8,13 @@ import by.innowise.authenticationservice.dto.keycloak.KeycloakIntrospectionRespo
 import by.innowise.authenticationservice.dto.keycloak.KeycloakTokenResponse;
 import by.innowise.authenticationservice.exception.IdentityProviderException;
 import by.innowise.authenticationservice.exception.InvalidAuthenticationDataException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
+@Slf4j
 @Component
 public class KeycloakTokenClient {
 
@@ -93,25 +95,21 @@ public class KeycloakTokenClient {
   ) {
     try {
       return sendTokenRequest(form);
-    } catch (HttpClientErrorException.BadRequest exception) {
+    } catch (RestClientException exception) {
       if (isInvalidGrant(exception)) {
         throw new InvalidAuthenticationDataException(
             "Invalid login, password or refresh token"
         );
       }
 
-      throw new IdentityProviderException(
-          "Keycloak rejected the token request",
+      log.error(
+          "Keycloak token request failed: {}",
+          exception.getMessage(),
           exception
       );
-    } catch (HttpClientErrorException.Unauthorized exception) {
+
       throw new IdentityProviderException(
-          "Keycloak client authentication failed",
-          exception
-      );
-    } catch (RestClientException exception) {
-      throw new IdentityProviderException(
-          "Failed to communicate with Keycloak",
+          "Failed to request token from Keycloak",
           exception
       );
     }
@@ -186,9 +184,11 @@ public class KeycloakTokenClient {
   }
 
   private boolean isInvalidGrant(
-      HttpClientErrorException.BadRequest exception
+      RestClientException exception
   ) {
     return exception
+        instanceof HttpClientErrorException.BadRequest badRequest
+        && badRequest
         .getResponseBodyAsString()
         .contains(INVALID_GRANT_ERROR);
   }

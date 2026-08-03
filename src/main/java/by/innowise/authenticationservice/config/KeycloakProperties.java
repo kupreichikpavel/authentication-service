@@ -1,26 +1,21 @@
 package by.innowise.authenticationservice.config;
 
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.validation.annotation.Validated;
 
-@Validated
 @ConfigurationProperties(prefix = "app.keycloak")
 public record KeycloakProperties(
-
-    @NotBlank
     String serverUrl,
-
-    @NotBlank
     String realm,
-
-    @NotBlank
     String clientId,
-
-    @NotBlank
     String clientSecret
-
 ) {
+
+  public KeycloakProperties {
+    serverUrl = requireText(serverUrl, "server-url");
+    realm = requireText(realm, "realm");
+    clientId = requireText(clientId, "client-id");
+    clientSecret = requireText(clientSecret, "client-secret");
+  }
 
   public String tokenUrl() {
     return normalizedServerUrl()
@@ -73,5 +68,20 @@ public record KeycloakProperties(
     }
 
     return serverUrl;
+  }
+
+  private static String requireText(
+      String value,
+      String propertyName
+  ) {
+    if (value == null || value.isBlank()) {
+      throw new IllegalArgumentException(
+          "app.keycloak."
+              + propertyName
+              + " must not be blank"
+      );
+    }
+
+    return value;
   }
 }

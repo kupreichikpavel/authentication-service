@@ -74,7 +74,7 @@ public class GlobalExceptionHandler {
       UserServiceCommunicationException exception
   ) {
     log.error(
-        "User Service communication failed",
+        "Failed to request data from User Service",
         exception
     );
 
