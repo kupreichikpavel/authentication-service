@@ -1,0 +1,52 @@
+name: Authentication Service CI
+
+on:
+  push:
+    branches:
+      - main
+      - epic/authentication-service
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v7
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      - name: Build and test
+        run: ./gradlew clean test --no-daemon
+
+  docker:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v7
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --tag authentication-service:${{ github.sha }} \
+            .

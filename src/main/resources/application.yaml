@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: authentication-service
+
+server:
+  port: 8081
+
+app:
+  keycloak:
+    server-url: ${KEYCLOAK_SERVER_URL:http://localhost:8082}
+    realm: ${KEYCLOAK_REALM:shopper}
+    client-id: ${KEYCLOAK_CLIENT_ID:authentication-service}
+    client-secret: ${AUTH_SERVICE_CLIENT_SECRET}
+
+  user-service:
+    base-url: ${USER_SERVICE_URL:http://localhost:8080}
+
+  http:
+    connect-timeout: ${HTTP_CONNECT_TIMEOUT:3s}
+    read-timeout: ${HTTP_READ_TIMEOUT:10s}

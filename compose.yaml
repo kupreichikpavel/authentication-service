@@ -1,0 +1,78 @@
+services:
+  keycloak-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${KEYCLOAK_DB_NAME}
+      POSTGRES_USER: ${KEYCLOAK_DB_USERNAME}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${KEYCLOAK_DB_USERNAME} -d ${KEYCLOAK_DB_NAME}
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.0
+    command:
+      - start-dev
+      - --import-realm
+    environment:
+      KC_DB: ${KEYCLOAK_DB_VENDOR}
+      KC_DB_URL: ${KEYCLOAK_DB_URL}
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USERNAME}
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+
+      AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET}
+    ports:
+      - "8082:8080"
+    volumes:
+      - ./keycloak/import:/opt/keycloak/data/import:ro
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    networks:
+      - default
+      - shopper-network
+    restart: unless-stopped
+
+  authentication-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-shopper}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-authentication-service}
+      AUTH_SERVICE_CLIENT_SECRET: ${AUTH_SERVICE_CLIENT_SECRET}
+
+      USER_SERVICE_URL: http://user-service:8080
+
+      HTTP_CONNECT_TIMEOUT: ${HTTP_CONNECT_TIMEOUT:-3s}
+      HTTP_READ_TIMEOUT: ${HTTP_READ_TIMEOUT:-10s}
+    ports:
+      - "8081:8081"
+    depends_on:
+      keycloak:
+        condition: service_started
+    networks:
+      - shopper-network
+    restart: unless-stopped
+
+volumes:
+  keycloak-db-data:
+
+networks:
+  default:
+  shopper-network:
+    name: shopper-network
+    external: true
