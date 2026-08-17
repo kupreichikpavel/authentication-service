@@ -16,6 +16,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -31,6 +33,7 @@ import static org.mockito.Mockito.when;
 class RegistrationServiceTest {
 
   private static final Long USER_ID = 42L;
+  private static final String KEYCLOAK_USER_ID = "keycloak-user-id";
 
   @Mock
   private UserServiceClient userServiceClient;
@@ -44,17 +47,19 @@ class RegistrationServiceTest {
   @Test
   void registerShouldReturnCreatedUser() {
     SignUpRequestDto request = request();
+    KeycloakUserCreateRequest keycloakRequest =
+        keycloakRequest(request);
+
+    when(keycloakAdminClient.createUser(
+        any(KeycloakUserCreateRequest.class),
+        eq(request.password())
+    )).thenReturn(KEYCLOAK_USER_ID);
 
     when(userServiceClient.createUser(
         any(UserServiceCreateRequestDto.class)
     )).thenReturn(
         new UserServiceUserResponseDto(USER_ID)
     );
-
-    when(keycloakAdminClient.createUser(
-        any(KeycloakUserCreateRequest.class),
-        eq(request.password())
-    )).thenReturn("keycloak-user-id");
 
     RegistrationResponseDto response =
         registrationService.register(request);
@@ -62,19 +67,106 @@ class RegistrationServiceTest {
     assertEquals(USER_ID, response.userId());
     assertEquals(request.login(), response.login());
 
+    verify(keycloakAdminClient).updateUserAttributes(
+        KEYCLOAK_USER_ID,
+        keycloakRequest,
+        Map.of(
+            "userId",
+            List.of(USER_ID.toString())
+        )
+    );
+
+    verify(userServiceClient, never())
+        .deleteUser(USER_ID);
+
+    verify(keycloakAdminClient, never())
+        .deleteUser(KEYCLOAK_USER_ID);
+  }
+
+  @Test
+  void registerShouldDeleteKeycloakUserWhenProfileCreationFails() {
+    SignUpRequestDto request = request();
+
+    when(keycloakAdminClient.createUser(
+        any(KeycloakUserCreateRequest.class),
+        eq(request.password())
+    )).thenReturn(KEYCLOAK_USER_ID);
+
+    UserAlreadyExistsException expectedException =
+        new UserAlreadyExistsException();
+
+    when(userServiceClient.createUser(
+        any(UserServiceCreateRequestDto.class)
+    )).thenThrow(expectedException);
+
+    UserAlreadyExistsException actualException =
+        assertThrows(
+            UserAlreadyExistsException.class,
+            () -> registrationService.register(request)
+        );
+
+    assertSame(expectedException, actualException);
+
+    verify(keycloakAdminClient)
+        .deleteUser(KEYCLOAK_USER_ID);
+
+    verify(keycloakAdminClient, never())
+        .updateUserAttributes(
+            any(),
+            any(KeycloakUserCreateRequest.class),
+            any()
+        );
+
     verify(userServiceClient, never())
         .deleteUser(USER_ID);
   }
 
   @Test
-  void registerShouldDeleteProfileWhenKeycloakFails() {
+  void registerShouldDeleteBothUsersWhenAttributeUpdateFails() {
     SignUpRequestDto request = request();
+
+    when(keycloakAdminClient.createUser(
+        any(KeycloakUserCreateRequest.class),
+        eq(request.password())
+    )).thenReturn(KEYCLOAK_USER_ID);
 
     when(userServiceClient.createUser(
         any(UserServiceCreateRequestDto.class)
     )).thenReturn(
         new UserServiceUserResponseDto(USER_ID)
     );
+
+    IdentityProviderException expectedException =
+        new IdentityProviderException(
+            "Failed to update Keycloak user"
+        );
+
+    org.mockito.Mockito.doThrow(expectedException)
+        .when(keycloakAdminClient)
+        .updateUserAttributes(
+            eq(KEYCLOAK_USER_ID),
+            any(KeycloakUserCreateRequest.class),
+            any()
+        );
+
+    IdentityProviderException actualException =
+        assertThrows(
+            IdentityProviderException.class,
+            () -> registrationService.register(request)
+        );
+
+    assertSame(expectedException, actualException);
+
+    verify(userServiceClient)
+        .deleteUser(USER_ID);
+
+    verify(keycloakAdminClient)
+        .deleteUser(KEYCLOAK_USER_ID);
+  }
+
+  @Test
+  void registerShouldNotCallUserServiceWhenKeycloakCreationFails() {
+    SignUpRequestDto request = request();
 
     IdentityProviderException expectedException =
         new IdentityProviderException(
@@ -94,29 +186,23 @@ class RegistrationServiceTest {
 
     assertSame(expectedException, actualException);
 
-    verify(userServiceClient)
-        .deleteUser(USER_ID);
+    verifyNoInteractions(userServiceClient);
+
+    verify(keycloakAdminClient, never())
+        .deleteUser(any());
   }
 
-  @Test
-  void registerShouldNotCallKeycloakWhenProfileCreationFails() {
-    SignUpRequestDto request = request();
-
-    when(userServiceClient.createUser(
-        any(UserServiceCreateRequestDto.class)
-    )).thenThrow(
-        new UserAlreadyExistsException()
+  private KeycloakUserCreateRequest keycloakRequest(
+      SignUpRequestDto request
+  ) {
+    return new KeycloakUserCreateRequest(
+        request.login(),
+        request.email(),
+        request.name(),
+        request.surname(),
+        true,
+        Map.of()
     );
-
-    assertThrows(
-        UserAlreadyExistsException.class,
-        () -> registrationService.register(request)
-    );
-
-    verifyNoInteractions(keycloakAdminClient);
-
-    verify(userServiceClient, never())
-        .deleteUser(USER_ID);
   }
 
   private SignUpRequestDto request() {

@@ -26,8 +26,8 @@ public class AuthenticationController {
   private final TokenService tokenService;
   private final RegistrationService registrationService;
 
-  @PostMapping("/sign-up")
-  public ResponseEntity<RegistrationResponseDto> signUp(
+  @PostMapping("/register")
+  public ResponseEntity<RegistrationResponseDto> register(
       @Valid @RequestBody SignUpRequestDto request
   ) {
     RegistrationResponseDto response =
@@ -38,8 +38,8 @@ public class AuthenticationController {
         .body(response);
   }
 
-  @PostMapping("/sign-in")
-  public ResponseEntity<TokenResponseDto> signIn(
+  @PostMapping("/login")
+  public ResponseEntity<TokenResponseDto> login(
       @Valid @RequestBody LoginRequestDto request
   ) {
     TokenResponseDto response =

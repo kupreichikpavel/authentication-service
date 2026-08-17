@@ -20,7 +20,7 @@ public class SecurityConfig {
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(authorize -> authorize.dispatcherTypeMatchers(DispatcherType.ERROR,
                 DispatcherType.FORWARD).permitAll()
-            .requestMatchers(HttpMethod.POST, "/api/v1/auth/sign-up", "/api/v1/auth/sign-in",
+            .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login",
                 "/api/v1/auth/refresh", "/api/v1/auth/validate").permitAll().anyRequest().denyAll())
         .build();
   }
