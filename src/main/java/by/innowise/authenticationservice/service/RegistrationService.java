@@ -22,15 +22,13 @@ public class RegistrationService {
   private final UserServiceClient userServiceClient;
   private final KeycloakAdminClient keycloakAdminClient;
 
-  public RegistrationResponseDto register(
+  public RegistrationResponseDto signUp(
       SignUpRequestDto request
   ) {
     KeycloakUserCreateRequest keycloakRequest =
         new KeycloakUserCreateRequest(
             request.login(),
             request.email(),
-            request.name(),
-            request.surname(),
             true,
             Map.of()
         );

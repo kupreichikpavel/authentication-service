@@ -68,8 +68,13 @@ public class KeycloakAdminClient {
       Map<String, List<String>> attributes) {
     String accessToken = tokenClient.createServiceAccessToken();
 
-    KeycloakUserCreateRequest updateRequest = new KeycloakUserCreateRequest(user.username(),
-        user.email(), user.firstName(), user.lastName(), user.enabled(), attributes);
+    KeycloakUserCreateRequest updateRequest =
+        new KeycloakUserCreateRequest(
+            user.username(),
+            user.email(),
+            user.enabled(),
+            attributes
+        );
 
     try {
       restClient.put().uri(properties.adminUserUrl(keycloakUserId))

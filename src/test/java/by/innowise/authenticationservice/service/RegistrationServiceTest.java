@@ -45,7 +45,7 @@ class RegistrationServiceTest {
   private RegistrationService registrationService;
 
   @Test
-  void registerShouldReturnCreatedUser() {
+  void signUpShouldReturnCreatedUser() {
     SignUpRequestDto request = request();
     KeycloakUserCreateRequest keycloakRequest =
         keycloakRequest(request);
@@ -62,7 +62,7 @@ class RegistrationServiceTest {
     );
 
     RegistrationResponseDto response =
-        registrationService.register(request);
+        registrationService.signUp(request);
 
     assertEquals(USER_ID, response.userId());
     assertEquals(request.login(), response.login());
@@ -84,7 +84,7 @@ class RegistrationServiceTest {
   }
 
   @Test
-  void registerShouldDeleteKeycloakUserWhenProfileCreationFails() {
+  void signUpShouldDeleteKeycloakUserWhenProfileCreationFails() {
     SignUpRequestDto request = request();
 
     when(keycloakAdminClient.createUser(
@@ -102,7 +102,7 @@ class RegistrationServiceTest {
     UserAlreadyExistsException actualException =
         assertThrows(
             UserAlreadyExistsException.class,
-            () -> registrationService.register(request)
+            () -> registrationService.signUp(request)
         );
 
     assertSame(expectedException, actualException);
@@ -122,7 +122,7 @@ class RegistrationServiceTest {
   }
 
   @Test
-  void registerShouldDeleteBothUsersWhenAttributeUpdateFails() {
+  void signUpShouldDeleteBothUsersWhenAttributeUpdateFails() {
     SignUpRequestDto request = request();
 
     when(keycloakAdminClient.createUser(
@@ -152,7 +152,7 @@ class RegistrationServiceTest {
     IdentityProviderException actualException =
         assertThrows(
             IdentityProviderException.class,
-            () -> registrationService.register(request)
+            () -> registrationService.signUp(request)
         );
 
     assertSame(expectedException, actualException);
@@ -165,7 +165,7 @@ class RegistrationServiceTest {
   }
 
   @Test
-  void registerShouldNotCallUserServiceWhenKeycloakCreationFails() {
+  void signUpShouldNotCallUserServiceWhenKeycloakCreationFails() {
     SignUpRequestDto request = request();
 
     IdentityProviderException expectedException =
@@ -181,7 +181,7 @@ class RegistrationServiceTest {
     IdentityProviderException actualException =
         assertThrows(
             IdentityProviderException.class,
-            () -> registrationService.register(request)
+            () -> registrationService.signUp(request)
         );
 
     assertSame(expectedException, actualException);
@@ -198,8 +198,6 @@ class RegistrationServiceTest {
     return new KeycloakUserCreateRequest(
         request.login(),
         request.email(),
-        request.name(),
-        request.surname(),
         true,
         Map.of()
     );

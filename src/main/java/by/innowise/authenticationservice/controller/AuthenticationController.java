@@ -26,12 +26,12 @@ public class AuthenticationController {
   private final TokenService tokenService;
   private final RegistrationService registrationService;
 
-  @PostMapping("/register")
-  public ResponseEntity<RegistrationResponseDto> register(
+  @PostMapping("/sign-up")
+  public ResponseEntity<RegistrationResponseDto> signUp(
       @Valid @RequestBody SignUpRequestDto request
   ) {
     RegistrationResponseDto response =
-        registrationService.register(request);
+        registrationService.signUp(request);
 
     return ResponseEntity
         .status(HttpStatus.CREATED)
