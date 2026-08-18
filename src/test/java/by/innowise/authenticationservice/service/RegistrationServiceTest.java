@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +59,7 @@ class RegistrationServiceTest {
     when(userServiceClient.createUser(
         any(UserServiceCreateRequestDto.class)
     )).thenReturn(
-        new UserServiceUserResponseDto(USER_ID)
+        userServiceResponse(request)
     );
 
     RegistrationResponseDto response =
@@ -133,7 +134,7 @@ class RegistrationServiceTest {
     when(userServiceClient.createUser(
         any(UserServiceCreateRequestDto.class)
     )).thenReturn(
-        new UserServiceUserResponseDto(USER_ID)
+        userServiceResponse(request)
     );
 
     IdentityProviderException expectedException =
@@ -190,6 +191,21 @@ class RegistrationServiceTest {
 
     verify(keycloakAdminClient, never())
         .deleteUser(any());
+  }
+
+  private UserServiceUserResponseDto userServiceResponse(
+      SignUpRequestDto request
+  ) {
+    return new UserServiceUserResponseDto(
+        USER_ID,
+        request.name(),
+        request.surname(),
+        request.birthDate(),
+        request.email(),
+        true,
+        Instant.parse("2026-01-01T00:00:00Z"),
+        Instant.parse("2026-01-01T00:00:00Z")
+    );
   }
 
   private KeycloakUserCreateRequest keycloakRequest(
