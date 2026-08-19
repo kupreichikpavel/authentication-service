@@ -6,6 +6,7 @@ import by.innowise.authenticationservice.dto.keycloak.KeycloakRoleResponse;
 import by.innowise.authenticationservice.dto.keycloak.KeycloakUserCreateRequest;
 import by.innowise.authenticationservice.exception.IdentityProviderException;
 import by.innowise.authenticationservice.exception.UserAlreadyExistsException;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -58,6 +59,30 @@ public class KeycloakAdminClient {
       }
 
       throw new IdentityProviderException("Failed to delete Keycloak user", exception);
+    } catch (RestClientException exception) {
+      throw new IdentityProviderException("Failed to communicate with Keycloak", exception);
+    }
+  }
+
+  public void updateUserAttributes(String keycloakUserId, KeycloakUserCreateRequest user,
+      Map<String, List<String>> attributes) {
+    String accessToken = tokenClient.createServiceAccessToken();
+
+    KeycloakUserCreateRequest updateRequest =
+        new KeycloakUserCreateRequest(
+            user.username(),
+            user.email(),
+            user.enabled(),
+            attributes
+        );
+
+    try {
+      restClient.put().uri(properties.adminUserUrl(keycloakUserId))
+          .headers(headers -> headers.setBearerAuth(accessToken))
+          .contentType(MediaType.APPLICATION_JSON).body(updateRequest).retrieve()
+          .toBodilessEntity();
+    } catch (RestClientResponseException exception) {
+      throw new IdentityProviderException("Failed to update Keycloak user", exception);
     } catch (RestClientException exception) {
       throw new IdentityProviderException("Failed to communicate with Keycloak", exception);
     }

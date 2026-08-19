@@ -31,15 +31,15 @@ public class AuthenticationController {
       @Valid @RequestBody SignUpRequestDto request
   ) {
     RegistrationResponseDto response =
-        registrationService.register(request);
+        registrationService.signUp(request);
 
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(response);
   }
 
-  @PostMapping("/sign-in")
-  public ResponseEntity<TokenResponseDto> signIn(
+  @PostMapping("/login")
+  public ResponseEntity<TokenResponseDto> login(
       @Valid @RequestBody LoginRequestDto request
   ) {
     TokenResponseDto response =

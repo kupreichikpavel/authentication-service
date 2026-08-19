@@ -1,14 +1,16 @@
 package by.innowise.authenticationservice.dto.userservice;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.time.Instant;
+import java.time.LocalDate;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 public record UserServiceUserResponseDto(
     Long id,
-    Boolean active
+    String name,
+    String surname,
+    LocalDate birthDate,
+    String email,
+    boolean active,
+    Instant createdAt,
+    Instant updatedAt
 ) {
-
-  public UserServiceUserResponseDto(Long id) {
-    this(id, null);
-  }
 }

@@ -10,7 +10,8 @@ RUN chmod +x gradlew
 
 COPY src src
 
-RUN ./gradlew clean bootJar --no-daemon && \
+RUN --mount=type=cache,id=shopper-gradle-cache,target=/root/.gradle,sharing=locked \
+    ./gradlew clean bootJar --no-daemon && \
     JAR_FILE="$(find build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*-plain.jar' -print -quit)" && \
     test -n "$JAR_FILE" && \
     cp "$JAR_FILE" build/libs/app.jar

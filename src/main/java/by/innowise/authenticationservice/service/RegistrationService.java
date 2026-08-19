@@ -22,39 +22,46 @@ public class RegistrationService {
   private final UserServiceClient userServiceClient;
   private final KeycloakAdminClient keycloakAdminClient;
 
-  public RegistrationResponseDto register(
+  public RegistrationResponseDto signUp(
       SignUpRequestDto request
   ) {
-    UserServiceCreateRequestDto userServiceRequest =
-        new UserServiceCreateRequestDto(
-            request.name(),
-            request.surname(),
-            request.birthDate(),
-            request.email()
+    KeycloakUserCreateRequest keycloakRequest =
+        new KeycloakUserCreateRequest(
+            request.login(),
+            request.email(),
+            true,
+            Map.of()
         );
 
-    UserServiceUserResponseDto createdUser =
-        userServiceClient.createUser(userServiceRequest);
+    String keycloakUserId =
+        keycloakAdminClient.createUser(
+            keycloakRequest,
+            request.password()
+        );
 
-    Long userId = createdUser.id();
+    Long userId = null;
 
     try {
-      KeycloakUserCreateRequest keycloakRequest =
-          new KeycloakUserCreateRequest(
-              request.login(),
-              request.email(),
+      UserServiceCreateRequestDto userServiceRequest =
+          new UserServiceCreateRequestDto(
               request.name(),
               request.surname(),
-              true,
-              Map.of(
-                  "userId",
-                  List.of(userId.toString())
-              )
+              request.birthDate(),
+              request.email()
           );
 
-      keycloakAdminClient.createUser(
+      UserServiceUserResponseDto createdUser =
+          userServiceClient.createUser(userServiceRequest);
+
+      userId = createdUser.id();
+
+      keycloakAdminClient.updateUserAttributes(
+          keycloakUserId,
           keycloakRequest,
-          request.password()
+          Map.of(
+              "userId",
+              List.of(userId.toString())
+          )
       );
 
       return new RegistrationResponseDto(
@@ -62,7 +69,18 @@ public class RegistrationService {
           request.login()
       );
     } catch (RuntimeException exception) {
-      compensateUserProfile(userId, exception);
+      if (userId != null) {
+        compensateUserProfile(
+            userId,
+            exception
+        );
+      }
+
+      compensateKeycloakUser(
+          keycloakUserId,
+          exception
+      );
+
       throw exception;
     }
   }
@@ -82,6 +100,26 @@ public class RegistrationService {
           "Failed to compensate User Service profile creation. "
               + "User id: {}",
           userId,
+          compensationException
+      );
+    }
+  }
+
+  private void compensateKeycloakUser(
+      String keycloakUserId,
+      RuntimeException originalException
+  ) {
+    try {
+      keycloakAdminClient.deleteUser(keycloakUserId);
+    } catch (RuntimeException compensationException) {
+      originalException.addSuppressed(
+          compensationException
+      );
+
+      log.error(
+          "Failed to compensate Keycloak user creation. "
+              + "Keycloak user id: {}",
+          keycloakUserId,
           compensationException
       );
     }
