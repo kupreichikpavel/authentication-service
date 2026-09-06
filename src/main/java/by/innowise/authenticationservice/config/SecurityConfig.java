@@ -22,8 +22,6 @@ public class SecurityConfig {
             .dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.FORWARD).permitAll()
             .requestMatchers("/actuator/health/**").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/v1/auth/sign-up", "/api/v1/auth/login",
-                "/api/v1/auth/refresh", "/api/v1/auth/validate").permitAll().anyRequest().denyAll()
-            .requestMatchers(HttpMethod.POST, "/api/v1/auth/sign-up", "/api/v1/auth/login",
                 "/api/v1/auth/refresh", "/api/v1/auth/validate").permitAll().anyRequest().denyAll())
         .build();
   }
